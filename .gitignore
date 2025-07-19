@@ -94,7 +94,7 @@ FRDM_MCX_N947/FRDM_MCXN947_freertos/
 FRDM_MCX_N947/middleware/
 FRDM_MCX_N947/rtos/
 FRDM_MCX_N947/tools/
-FRDM_MCX_N947/frdmmcxn947_freertos_hello_cm33_core0_template/
+#FRDM_MCX_N947/frdmmcxn947_freertos_hello_cm33_core0_template/
 FRDM_MCX_N947/myNXP947/
 
 
