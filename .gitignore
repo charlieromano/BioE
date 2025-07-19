@@ -53,3 +53,48 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+
+# === Firmware Binary Files ===
+*.bin
+*.hex
+*.img
+*.map
+
+# === Static and Linker Libraries ===
+*.a
+*.lib
+*.lst
+
+# === Dependency and Log Files ===
+*.d
+*.log
+
+# === IDE Temporary Files ===
+*.swp
+*.swo
+
+# === Backup Files ===
+*~
+
+# === Build Output Directories ===
+build/
+Build/
+Debug/
+Release/
+dist/
+out/
+
+# === Exclude A_FILES Directory ===
+FRDM_MCX_N947/boards/
+FRDM_MCX_N947/CMSIS/
+FRDM_MCX_N947/components/
+FRDM_MCX_N947/devices/
+FRDM_MCX_N947/FRDM_MCXN947_freertos/
+FRDM_MCX_N947/middleware/
+FRDM_MCX_N947/rtos/
+FRDM_MCX_N947/tools/
+FRDM_MCX_N947/frdmmcxn947_freertos_hello_cm33_core0_template/
+FRDM_MCX_N947/myNXP947/
+
+
