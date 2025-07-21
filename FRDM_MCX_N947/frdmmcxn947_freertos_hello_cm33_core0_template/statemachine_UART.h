@@ -45,5 +45,19 @@ eSystemState_UART 	UART_ReceiveHandler(void);
 eSystemState_UART 	UART_ProcessHandler(void);
 eSystemState_UART 	UART_TransmitHandler(void);
 
+typedef enum{
+    ERROR_UART_NONE,
+    ERROR_UART_TIMEOUT,
+    ERROR_UART_OVERFLOW,
+    ERROR_UART_PARITY,
+    ERROR_UART_FRAMING,
+    ERROR_UART_UNKNOWN_COMMAND,
+    ERROR_UART_INVALID_PARAMETER
+} eUART_ErrorCode;
+
+typedef struct {
+    eUART_ErrorCode code;
+    char message[64];
+} sUART_Error;
 
 #endif /* STATEMACHINE_UART_H_ */
