@@ -34,3 +34,12 @@ eSystemState_UART 	UART_TransmitHandler(void)
     // If an error occurs, return STATE_UART_ERROR
     return STATE_UART_TRANSMIT;
 }
+
+sStateMachine_UART fsmMachineUART [] = 
+{
+	{STATE_UART_IDLE, evUART_Idle, UART_InitHandler},
+	{STATE_UART_RECEIVE, evUART_Receive, UART_ReceiveHandler},
+	{STATE_UART_PROCESS, evUART_Process, UART_ProcessHandler},
+    {STATE_UART_TRANSMIT, evUART_Transmit, UART_TransmitHandler},
+    {STATE_UART_ERROR, evUART_Error, UART_InitHandler} // Error state handler can be NULL or a specific error handler
+};

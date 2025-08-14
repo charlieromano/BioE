@@ -18,14 +18,16 @@
 
 #include "statemachine_AB.h"
 #include "statemachine_Valve.h"
+#include "statemachine_UART.h"
 
 void timerCallbackAB(TimerHandle_t xTimerHandle);
 void vTaskAB(void *xTimerHandle);
+void vTaskUART(void *pvParameters);
 void vTaskValve(void *pvParameters);
 void vTaskPump(void *pvParameters);
 
 
-extern TimerHandle_t timerHandleAB;
+extern TimerHandle_t timerHandle_AB;
 extern QueueHandle_t queueHandle_AB;
 
 extern sStateMachine_AB fsmMachineAB[];

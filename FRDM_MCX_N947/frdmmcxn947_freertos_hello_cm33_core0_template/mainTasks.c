@@ -1,8 +1,10 @@
 #include "mainTasks.h"
 
-TimerHandle_t timerHandleAB;
+TimerHandle_t timerHandle_AB;
 QueueHandle_t queueHandle_AB;
 
+TimerHandle_t timerHandle_UART;
+QueueHandle_t queueHandle_UART;
 
 void timerCallbackAB(TimerHandle_t xTimerHandle)
 {
@@ -47,6 +49,66 @@ void vTaskAB(void *xTimerHandle)
        //vTaskDelete(xTaskStateMachineHandler);
     }
 }
+
+void vTaskUART(void *prvParameters)
+{
+    (void)prvParameters;
+    // This task is responsible for UART communication
+    PRINTF("vTaskUART!\r\n");
+    /*    
+    if (pdTRUE == xSemaphoreTake( xMutexUART, portMAX_DELAY)){
+       vPrintString("Task UART is running.\r\n");
+       xSemaphoreGive(xMutexUART);
+    }
+    */ 
+ 
+    LPUART_Type *base = LPUART1;
+    lpuart_config_t config;
+    LPUART_GetDefaultConfig(&config);
+    config.baudRate_Bps = 115200U;
+    config.enableTx = true;
+    config.enableRx = true;
+    LPUART_Init(base, &config, CLOCK_GetFreq(kCLOCK_CoreSysClk));
+    LPUART_EnableInterrupts(base, kLPUART_RxDataRegFullInterruptEnable | kLPUART_TxDataRegEmptyInterruptEnable);
+    LPUART_EnableTx(base, true);
+    LPUART_EnableRx(base, true);
+    PRINTF("UART State Machine started.\r\n");
+    
+    /*
+    eSystemState_UART currentState = UART_InitHandler();
+    eSystemEvent_UART event = evUART_Idle;
+    */
+   
+    uint8_t ch;
+    // Initialize the UART state machine
+    while(true){
+        // Blocking read: Wait for a character from UART
+        if (kStatus_Success == LPUART_ReadBlocking(base, &ch, 1))
+        {
+            // Blocking write: Echo the character back
+            LPUART_WriteBlocking(base, &ch, 1);
+        }
+
+        /*
+        // fsmMachineUART init
+        eSystemEvent_UART newEvent = evUART_Idle;
+        eSystemState_UART nextState = STATE_UART_IDLE;
+        fsmMachineUART[nextState].fsmEvent = newEvent; 
+        nextState = (*fsmMachineUART[nextState].fsmHandler)();
+        
+        // Active object
+        while(true){
+            if( pdPASS == xQueueReceive(queueHandle_UART, &newEvent, portMAX_DELAY)){
+                fsmMachineUART[nextState].fsmEvent = newEvent;
+                nextState = (*fsmMachineUART[nextState].fsmHandler)();
+            }
+        }
+       //vPrintString("This task is running and about to delete itself.\r\n");
+       //vTaskDelete(xTaskStateMachineHandler);
+       */
+    }
+}
+
 
 #define VALVE_GPIO_PORT     GPIO1 // For P1_12, it's GPIO1
 #define VALVE_GPIO_PIN      12U   // Pin 12

@@ -24,6 +24,7 @@ typedef enum {
 } eSystemState_UART;
 
 typedef enum{
+    evUART_Init,
 	evUART_Idle,
     evUART_Receive,
     evUART_Process,
