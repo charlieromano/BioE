@@ -3,8 +3,9 @@
 TimerHandle_t timerHandle_AB;
 QueueHandle_t queueHandle_AB;
 
-TimerHandle_t timerHandle_UART;
-QueueHandle_t queueHandle_UART;
+TimerHandle_t fsmUART_timerHandle;
+QueueHandle_t fsmUART_queueHandle;
+
 
 void timerCallbackAB(TimerHandle_t xTimerHandle)
 {
@@ -50,62 +51,85 @@ void vTaskAB(void *xTimerHandle)
     }
 }
 
-void vTaskUART(void *prvParameters)
+void UART_init_with_IRQ(LPUART_Type *base)
 {
-    (void)prvParameters;
-    // This task is responsible for UART communication
-    PRINTF("vTaskUART!\r\n");
-    /*    
-    if (pdTRUE == xSemaphoreTake( xMutexUART, portMAX_DELAY)){
-       vPrintString("Task UART is running.\r\n");
-       xSemaphoreGive(xMutexUART);
-    }
-    */ 
- 
-    LPUART_Type *base = LPUART1;
+/*
     lpuart_config_t config;
     LPUART_GetDefaultConfig(&config);
     config.baudRate_Bps = 115200U;
     config.enableTx = true;
     config.enableRx = true;
     LPUART_Init(base, &config, CLOCK_GetFreq(kCLOCK_CoreSysClk));
-    LPUART_EnableInterrupts(base, kLPUART_RxDataRegFullInterruptEnable | kLPUART_TxDataRegEmptyInterruptEnable);
-    LPUART_EnableTx(base, true);
-    LPUART_EnableRx(base, true);
-    PRINTF("UART State Machine started.\r\n");
-    
-    /*
-    eSystemState_UART currentState = UART_InitHandler();
-    eSystemEvent_UART event = evUART_Idle;
-    */
-   
-    uint8_t ch;
-    // Initialize the UART state machine
-    while(true){
-        // Blocking read: Wait for a character from UART
-        if (kStatus_Success == LPUART_ReadBlocking(base, &ch, 1))
-        {
-            // Blocking write: Echo the character back
-            LPUART_WriteBlocking(base, &ch, 1);
-        }
 
-        /*
-        // fsmMachineUART init
-        eSystemEvent_UART newEvent = evUART_Idle;
-        eSystemState_UART nextState = STATE_UART_IDLE;
-        fsmMachineUART[nextState].fsmEvent = newEvent; 
-        nextState = (*fsmMachineUART[nextState].fsmHandler)();
+    // Enable RX interrupt
+    LPUART_EnableInterrupts(base, kLPUART_RxDataRegFullInterruptEnable);
+    // Enable NVIC interrupt for LPUART1
+    NVIC_SetPriority(LPUART_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY);
+    NVIC_EnableIRQ(LPUART_IRQn);
+*/
+}
+
+void LPUART1_IRQHandler(void)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    uint8_t ch;
+
+    // Check if RX data is available
+    if (LPUART_GetStatusFlags(LPUART1) & kLPUART_RxDataRegFullFlag)
+    {
+        ch = LPUART_ReadByte(LPUART1);
+
+        // Send event or data to a queue
+        xQueueSendFromISR(fsmUART_queueHandle, &ch, &xHigherPriorityTaskWoken);
+
+        // Optionally, echo back
+        LPUART_WriteByte(LPUART1, ch);
+    }
+
+    // Clear interrupt flag if needed (usually handled by reading the byte)
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+
+
+void vTaskUART(void *xTimerHandle)
+{
+    uint8_t ch;
+    UART_init_with_IRQ(LPUART1);
+
+    while (true)
+    {
+        // Wait for data from ISR
+        if (xQueueReceive(fsmUART_queueHandle, &ch, portMAX_DELAY) == pdPASS)
+        {
+            PRINTF("UART Rx from ISR: %c\r\n", ch);
+            // You can process or echo here if not done in ISR
+        }
+    }
+}
+
+void vTask_fsmUART(void *xTimerHandle)
+{
+    // This task is responsible for UART communication
+    (void)xTimerHandle;
+    PRINTF("vTask_fsmUART!\r\n");
+
+    while(true){
+        // fsmUART init
+        eSystemEvent_fsmUART newEvent = evUART_Init;
+        eSystemState_fsmUART nextState = STATE_UART_INIT;
+        fsmUART[nextState].fsmEvent = newEvent; 
+        nextState = (*fsmUART[nextState].fsmHandler)();
         
         // Active object
         while(true){
-            if( pdPASS == xQueueReceive(queueHandle_UART, &newEvent, portMAX_DELAY)){
-                fsmMachineUART[nextState].fsmEvent = newEvent;
-                nextState = (*fsmMachineUART[nextState].fsmHandler)();
+            if( pdPASS == xQueueReceive(fsmUART_queueHandle, &newEvent, portMAX_DELAY)){
+                fsmUART[nextState].fsmEvent = newEvent;
+                nextState = (*fsmUART[nextState].fsmHandler)();
             }
         }
-       //vPrintString("This task is running and about to delete itself.\r\n");
-       //vTaskDelete(xTaskStateMachineHandler);
-       */
+        //vPrintString("This task is running and about to delete itself.\r\n");
+        //vTaskDelete(xTaskStateMachineHandler);
     }
 }
 
@@ -214,3 +238,37 @@ void vTaskPump(void *pvParameters) {
 //         vTaskDelay(pdMS_TO_TICKS(500)); // Wait 500ms before changing duty cycle again
 //     }
 }
+
+/*
+#include "fsl_lpuart.h"
+
+#define DEMO_UART2          LPUART2
+#define DEMO_UART2_CLK_FREQ CLOCK_GetFreq(kCLOCK_CoreSysClk)  // Adjust depending on your SDK clock functions
+#define DEMO_UART2_IRQn     LPUART2_IRQn
+
+void uart2_init(void)
+{
+    lpuart_config_t config;
+
+    LPUART_GetDefaultConfig(&config);
+    config.baudRate_Bps = 115200U;
+    config.enableTx = true;
+    config.enableRx = true;
+
+    LPUART_Init(DEMO_UART2, &config, DEMO_UART2_CLK_FREQ);
+}
+
+void uart2_echo_task(void *pvParameters)
+{
+    uint8_t ch;
+
+    for (;;)
+    {
+        // Blocking read of 1 byte
+        LPUART_ReadBlocking(DEMO_UART2, &ch, 1);
+
+        // Echo back
+        LPUART_WriteBlocking(DEMO_UART2, &ch, 1);
+    }
+}
+*/

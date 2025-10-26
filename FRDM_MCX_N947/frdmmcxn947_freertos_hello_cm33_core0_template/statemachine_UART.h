@@ -10,18 +10,22 @@
 #include "queue.h"
 #include "board.h"
 #include "fsl_debug_console.h"
+#include "fsl_lpuart.h"
+#include "fsl_clock.h"
+#include "pin_mux.h"
 
 #define QUEUE_MAX_LENGTH 10
 
 extern SemaphoreHandle_t xMutexUART;
 
 typedef enum {
+    STATE_UART_INIT,
 	STATE_UART_IDLE,
 	STATE_UART_RECEIVE,
     STATE_UART_PROCESS,
     STATE_UART_TRANSMIT,
     STATE_UART_ERROR
-} eSystemState_UART;
+} eSystemState_fsmUART;
 
 typedef enum{
     evUART_Init,
@@ -31,20 +35,20 @@ typedef enum{
     evUART_Transmit,
     evUART_Error,
     evUART_Timeout,
-} eSystemEvent_UART;
+} eSystemEvent_fsmUART;
 
-typedef eSystemState_UART (*pfEventHandler_UART)(void);
+typedef eSystemState_fsmUART (*pfEventHandler_fsmUART)(void);
 
 typedef struct{
-	eSystemState_UART 		fsmState;
-	eSystemEvent_UART 		fsmEvent;
-	pfEventHandler_UART		fsmHandler;
-} sStateMachine_UART;
+	eSystemState_fsmUART 		fsmState;
+	eSystemEvent_fsmUART 		fsmEvent;
+	pfEventHandler_fsmUART		fsmHandler;
+} sStateMachine_fsmUART;
 
-eSystemState_UART 	UART_InitHandler(void);
-eSystemState_UART 	UART_ReceiveHandler(void);
-eSystemState_UART 	UART_ProcessHandler(void);
-eSystemState_UART 	UART_TransmitHandler(void);
+eSystemState_fsmUART 	fsmUART_InitHandler(void);
+eSystemState_fsmUART 	fsmUART_ReceiveHandler(void);
+eSystemState_fsmUART 	fsmUART_ProcessHandler(void);
+eSystemState_fsmUART 	fsmUART_TransmitHandler(void);
 
 typedef enum{
     ERROR_UART_NONE,

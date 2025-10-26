@@ -27,6 +27,11 @@
 
 #include "mainTasks.h"
 
+#define LPUART_CLK_FREQ   CLOCK_GetLPFlexCommClkFreq(4u)
+#define LPUART_IRQn       LP_FLEXCOMM4_IRQn
+#define LPUART_IRQHandler LP_FLEXCOMM4_IRQHandler
+#define LPUART_RING_BUFFER_SIZE 16
+
 /*${macro:end}*/
 /*******************************************************************************
  * Prototypes
