@@ -1,11 +1,37 @@
 #include "mainTasks.h"
+#include "uart_driver.h"
+#include "fsmUART.h"
 
 TimerHandle_t timerHandle_AB;
 QueueHandle_t queueHandle_AB;
+QueueHandle_t fsmUART_queueHandle = NULL;
 
-TimerHandle_t fsmUART_timerHandle;
-QueueHandle_t fsmUART_queueHandle;
+TaskHandle_t xTaskStateMachineHandler_UART = NULL;
+TaskHandle_t xTaskStateMachineHandler_fsmUART = NULL;
 
+
+void createTaskUART(void)
+{
+    PRINTF("createTaskUART().\r\n");
+    /* Initialize UART hardware */
+    UART_DriverInit();
+
+    /* Create FSM queue */
+    fsmUART_queueHandle = xQueueCreate(QUEUE_MAX_LENGTH, sizeof(eSystemEvent_fsmUART));
+    if (fsmUART_queueHandle == NULL){
+        perror("Error creating FSM queue");
+        while(1);
+    }
+
+    /* Create UART FSM task */
+    if (xTaskCreate(vTaskUART, "UART_Task",
+                    configMINIMAL_STACK_SIZE + 100,
+                    NULL, tskIDLE_PRIORITY + 3,
+                    &xTaskStateMachineHandler_UART) != pdPASS){
+        perror("Error creating UART task");
+        while(1);
+    }
+}
 
 void timerCallbackAB(TimerHandle_t xTimerHandle)
 {
@@ -17,20 +43,12 @@ void timerCallbackAB(TimerHandle_t xTimerHandle)
           perror("Error sending data to the queueHandle_AB from timer\r\n");
     }
 }
-
-      
+   
 void vTaskAB(void *xTimerHandle)
 {
     (void)xTimerHandle;
     PRINTF("vTaskAB!\r\n");
- 
-    /*
-    if (pdTRUE == xSemaphoreTake( xMutexUART, portMAX_DELAY)){
-       vPrintString("Task AB is running.\r\n");
-       xSemaphoreGive(xMutexUART);
-    }
-   */ 
- 
+  
     while(true){
 
         // fsmMachineAB init
@@ -50,6 +68,33 @@ void vTaskAB(void *xTimerHandle)
        //vTaskDelete(xTaskStateMachineHandler);
     }
 }
+
+void vTaskUART(void *pvParameters)
+{
+    uint16_t tmprxIndex;
+    uint16_t tmptxIndex;
+    PRINTF("vTaskUART().\r\n");
+
+    while(1)
+    {
+        if (kLPUART_TxDataRegEmptyFlag & LPUART_GetStatusFlags(LPUART4))
+        {
+            tmprxIndex = rxIndex;
+            tmptxIndex = txIndex;
+            
+            if (tmprxIndex != tmptxIndex)
+            {
+                //PRINTF("vTaskUART(within).\r\n");
+                LPUART_WriteByte(LPUART4, demoRingBuffer[txIndex]);
+                txIndex++;
+                txIndex %= LPUART_RING_BUFFER_SIZE;
+            }
+        }
+
+        //vTaskDelay(pdMS_TO_TICKS(1));
+    }
+}
+
 
 void UART_init_with_IRQ(LPUART_Type *base)
 {
@@ -91,7 +136,7 @@ void LPUART1_IRQHandler(void)
 }
 
 
-
+/*
 void vTaskUART(void *xTimerHandle)
 {
     uint8_t ch;
@@ -107,6 +152,7 @@ void vTaskUART(void *xTimerHandle)
         }
     }
 }
+*/
 
 void vTask_fsmUART(void *xTimerHandle)
 {

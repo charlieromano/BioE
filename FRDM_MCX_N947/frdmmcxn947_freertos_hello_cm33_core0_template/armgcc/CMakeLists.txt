@@ -59,8 +59,10 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../mainTasks.c"
 "${ProjDirPath}/../statemachine_AB.h"
 "${ProjDirPath}/../statemachine_AB.c"
-"${ProjDirPath}/../statemachine_UART.h"
-"${ProjDirPath}/../statemachine_UART.c"
+"${ProjDirPath}/../fsmUART.h"
+"${ProjDirPath}/../fsmUART.c"
+"${ProjDirPath}/../uart_driver.h"
+"${ProjDirPath}/../uart_driver.c"
 )
 
 target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE

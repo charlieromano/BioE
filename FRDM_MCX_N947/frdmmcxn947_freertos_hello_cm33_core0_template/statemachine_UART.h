@@ -1,10 +1,3 @@
-#ifndef STATEMACHINE_UART_H
-#define STATEMACHINE_UART_H
-
-#include <stdint.h>
-#include <stdio.h>
-#include "FreeRTOS.h"
-#include "task.h"
 #include "timers.h"
 #include "semphr.h"
 #include "queue.h"
@@ -17,6 +10,7 @@
 #define QUEUE_MAX_LENGTH 10
 
 extern SemaphoreHandle_t xMutexUART;
+QueueHandle_t fsmUART_queueHandle;
 
 typedef enum {
     STATE_UART_INIT,
@@ -65,4 +59,4 @@ typedef struct {
     char message[64];
 } sUART_Error;
 
-#endif /* STATEMACHINE_UART_H_ */
+#endif /* FSM_UART_H_ */

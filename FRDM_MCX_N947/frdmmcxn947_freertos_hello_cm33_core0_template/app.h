@@ -7,38 +7,19 @@
 #ifndef _APP_H_
 #define _APP_H_
 
-/*******************************************************************************
- * Definitions
- ******************************************************************************/
-/*${macro:start}*/
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 #include "timers.h"
-
-/* Freescale includes. */
 #include "fsl_device_registers.h"
 #include "fsl_debug_console.h"
 #include "board.h"
 #include "fsl_gpio.h"
-//#include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
 
 #include "mainTasks.h"
 
-#define LPUART_CLK_FREQ   CLOCK_GetLPFlexCommClkFreq(4u)
-#define LPUART_IRQn       LP_FLEXCOMM4_IRQn
-#define LPUART_IRQHandler LP_FLEXCOMM4_IRQHandler
-#define LPUART_RING_BUFFER_SIZE 16
-
-/*${macro:end}*/
-/*******************************************************************************
- * Prototypes
- ******************************************************************************/
-/*${prototype:start}*/
 void BOARD_InitHardware(void);
-
-/*${prototype:end}*/
 
 #endif /* _APP_H_ */
