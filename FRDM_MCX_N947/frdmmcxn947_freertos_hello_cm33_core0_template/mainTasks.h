@@ -27,8 +27,6 @@ extern TimerHandle_t timerHandle_AB;
 extern TimerHandle_t fsmUART_timerHandle;
 extern QueueHandle_t queueHandle_AB;
 extern QueueHandle_t fsmUART_queueHandle;
-extern sStateMachine_AB fsmMachineAB[];
-extern sStateMachine_AB fsmUART[];
 extern TaskHandle_t xTaskStateMachineHandler_UART;
 extern TaskHandle_t xTaskStateMachineHandler_fsmUART;
 
@@ -39,7 +37,6 @@ void vTaskValve(void *pvParameters);
 void vTaskPump(void *pvParameters);
 void vTask_fsmUART(void *xTimerHandle);
 void vTaskUART(void *pvParameters);
-
-void createTaskUART(void);
+void vTaskCreate_UART(void);
 
 #endif /* MAIN_TASKS_H_ */

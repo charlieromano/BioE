@@ -29,11 +29,12 @@ typedef enum{
 
 typedef eSystemState_AB (*pfEventHandler_AB)(void);
 
-typedef struct{
+typedef struct sStateMachine_AB{
 	eSystemState_AB 		fsmState;
 	eSystemEvent_AB 		fsmEvent;
 	pfEventHandler_AB		fsmHandler;
 } sStateMachine_AB;
+extern sStateMachine_AB fsmMachineAB[];
 
 eSystemState_AB 	InitHandler_AB(void);
 eSystemState_AB 	AtoBHandler(void);

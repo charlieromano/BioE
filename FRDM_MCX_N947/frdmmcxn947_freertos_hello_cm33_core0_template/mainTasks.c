@@ -5,12 +5,11 @@
 TimerHandle_t timerHandle_AB;
 QueueHandle_t queueHandle_AB;
 QueueHandle_t fsmUART_queueHandle = NULL;
-
 TaskHandle_t xTaskStateMachineHandler_UART = NULL;
 TaskHandle_t xTaskStateMachineHandler_fsmUART = NULL;
 
 
-void createTaskUART(void)
+void vTaskCreate_UART(void)
 {
     PRINTF("createTaskUART().\r\n");
     /* Initialize UART hardware */
@@ -23,49 +22,13 @@ void createTaskUART(void)
         while(1);
     }
 
-    /* Create UART FSM task */
+    /* Create UART/fsmUART task */
     if (xTaskCreate(vTaskUART, "UART_Task",
                     configMINIMAL_STACK_SIZE + 100,
                     NULL, tskIDLE_PRIORITY + 3,
                     &xTaskStateMachineHandler_UART) != pdPASS){
         perror("Error creating UART task");
         while(1);
-    }
-}
-
-void timerCallbackAB(TimerHandle_t xTimerHandle)
-{
-    PRINTF("Timer!\r\n");
-    static uint8_t cnt = 0;
-    cnt++;
-    eSystemEvent_AB data_AB = cnt%2;
-    if(xQueueSend(queueHandle_AB, &data_AB, 0U)!=pdPASS){
-          perror("Error sending data to the queueHandle_AB from timer\r\n");
-    }
-}
-   
-void vTaskAB(void *xTimerHandle)
-{
-    (void)xTimerHandle;
-    PRINTF("vTaskAB!\r\n");
-  
-    while(true){
-
-        // fsmMachineAB init
-        eSystemEvent_AB newEvent = evInit_AB;
-        eSystemState_AB nextState = STATE_INIT_AB;
-        fsmMachineAB[nextState].fsmEvent = newEvent; 
-        nextState = (*fsmMachineAB[nextState].fsmHandler)();
-        
-        // Active object
-        while(true){
-            if( pdPASS == xQueueReceive(queueHandle_AB, &newEvent, portMAX_DELAY)){
-                fsmMachineAB[nextState].fsmEvent = newEvent;
-                nextState = (*fsmMachineAB[nextState].fsmHandler)();
-            }
-        }
-       //vPrintString("This task is running and about to delete itself.\r\n");
-       //vTaskDelete(xTaskStateMachineHandler);
     }
 }
 
@@ -95,6 +58,30 @@ void vTaskUART(void *pvParameters)
     }
 }
 
+void vTask_fsmUART(void *xTimerHandle)
+{
+    // This task is responsible for UART communication
+    (void)xTimerHandle;
+    PRINTF("vTask_fsmUART!\r\n");
+
+    while(true){
+        // fsmUART init
+        eSystemEvent_fsmUART newEvent = evUART_Init;
+        eSystemState_fsmUART nextState = STATE_UART_INIT;
+        fsmUART[nextState].fsmEvent = newEvent; 
+        nextState = (*fsmUART[nextState].fsmHandler)();
+        
+        // Active object
+        while(true){
+            if( pdPASS == xQueueReceive(fsmUART_queueHandle, &newEvent, portMAX_DELAY)){
+                fsmUART[nextState].fsmEvent = newEvent;
+                nextState = (*fsmUART[nextState].fsmHandler)();
+            }
+        }
+        //vPrintString("This task is running and about to delete itself.\r\n");
+        //vTaskDelete(xTaskStateMachineHandler);
+    }
+}
 
 void UART_init_with_IRQ(LPUART_Type *base)
 {
@@ -136,6 +123,43 @@ void LPUART1_IRQHandler(void)
 }
 
 
+void timerCallbackAB(TimerHandle_t xTimerHandle)
+{
+    PRINTF("Timer!\r\n");
+    static uint8_t cnt = 0;
+    cnt++;
+    eSystemEvent_AB data_AB = cnt%2;
+    if(xQueueSend(queueHandle_AB, &data_AB, 0U)!=pdPASS){
+          perror("Error sending data to the queueHandle_AB from timer\r\n");
+    }
+}
+   
+void vTaskAB(void *xTimerHandle)
+{
+    (void)xTimerHandle;
+    PRINTF("vTaskAB!\r\n");
+  
+    while(true){
+
+        // fsmMachineAB init
+        eSystemEvent_AB newEvent = evInit_AB;
+        eSystemState_AB nextState = STATE_INIT_AB;
+        fsmMachineAB[nextState].fsmEvent = newEvent; 
+        nextState = (*fsmMachineAB[nextState].fsmHandler)();
+        
+        // Active object
+        while(true){
+            if( pdPASS == xQueueReceive(queueHandle_AB, &newEvent, portMAX_DELAY)){
+                fsmMachineAB[nextState].fsmEvent = newEvent;
+                nextState = (*fsmMachineAB[nextState].fsmHandler)();
+            }
+        }
+       //vPrintString("This task is running and about to delete itself.\r\n");
+       //vTaskDelete(xTaskStateMachineHandler);
+    }
+}
+
+
 /*
 void vTaskUART(void *xTimerHandle)
 {
@@ -153,31 +177,6 @@ void vTaskUART(void *xTimerHandle)
     }
 }
 */
-
-void vTask_fsmUART(void *xTimerHandle)
-{
-    // This task is responsible for UART communication
-    (void)xTimerHandle;
-    PRINTF("vTask_fsmUART!\r\n");
-
-    while(true){
-        // fsmUART init
-        eSystemEvent_fsmUART newEvent = evUART_Init;
-        eSystemState_fsmUART nextState = STATE_UART_INIT;
-        fsmUART[nextState].fsmEvent = newEvent; 
-        nextState = (*fsmUART[nextState].fsmHandler)();
-        
-        // Active object
-        while(true){
-            if( pdPASS == xQueueReceive(fsmUART_queueHandle, &newEvent, portMAX_DELAY)){
-                fsmUART[nextState].fsmEvent = newEvent;
-                nextState = (*fsmUART[nextState].fsmHandler)();
-            }
-        }
-        //vPrintString("This task is running and about to delete itself.\r\n");
-        //vTaskDelete(xTaskStateMachineHandler);
-    }
-}
 
 
 #define VALVE_GPIO_PORT     GPIO1 // For P1_12, it's GPIO1

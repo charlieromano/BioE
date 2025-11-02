@@ -18,7 +18,7 @@ TaskHandle_t xTaskStateMachineHandler_AB = NULL;
 int main(void)
 {
     BOARD_InitHardware();
-/*
+
     if (xTaskCreate(hello_task, "Hello_task", 
       configMINIMAL_STACK_SIZE + 100,
       NULL, tskIDLE_PRIORITY + 3,
@@ -26,7 +26,7 @@ int main(void)
         perror("Error creating UART task");
         while (1);
     }
-*/
+
    //***************************************************************************// 
    // State Machine AB tasks 
    //***************************************************************************
@@ -60,11 +60,7 @@ int main(void)
       return 1;
    }
     */
-   //***************************************************************************//
-   // Create the queue
-   createTaskUART();
-   //***************************************************************************//
-
+   vTaskCreate_UART();
    vTaskStartScheduler();
    while (1);
 }
@@ -76,7 +72,7 @@ static void hello_task(void *pvParameters)
 {
     while (1)
     {
-        PRINTF("Hello world 46.\r\n");
+        PRINTF("Hello world 47.\r\n");
         vTaskSuspend(NULL);
     }
 }

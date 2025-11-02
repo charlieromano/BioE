@@ -13,7 +13,8 @@
         "SdkRootDirPath": "c:/Users/CARLOS/Documents/NXP/NXP/FRDM_MCX_N947",
         "POSTPROCESS_UTILITY": "C:/Users/CARLOS/.mcuxpressotools/mcux-fixelf/mcux-fixelf.exe",
         "MCUX_VENV_PATH": "C:/Users/CARLOS/.mcuxpressotools/.venv/Scripts",
-        "PATH": "$env{MCUX_VENV_PATH};$penv{PATH}"
+        "PATH": "$env{MCUX_VENV_PATH};$penv{PATH}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     },
     {
@@ -25,7 +26,8 @@
         "SdkRootDirPath": "c:/Users/CARLOS/Documents/NXP/NXP/FRDM_MCX_N947",
         "POSTPROCESS_UTILITY": "C:/Users/CARLOS/.mcuxpressotools/mcux-fixelf/mcux-fixelf.exe",
         "MCUX_VENV_PATH": "C:/Users/CARLOS/.mcuxpressotools/.venv/Scripts",
-        "PATH": "$env{MCUX_VENV_PATH};$penv{PATH}"
+        "PATH": "$env{MCUX_VENV_PATH};$penv{PATH}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     }
   ],
