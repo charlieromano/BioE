@@ -88,3 +88,41 @@ Hello world.
 - [TWR-KM34Z50MV3](../../_boards/twrkm34z50mv3/freertos_examples/freertos_hello/example_board_readme.md)
 - [TWR-KM34Z75M](../../_boards/twrkm34z75m/freertos_examples/freertos_hello/example_board_readme.md)
 - [TWR-KM35Z75M](../../_boards/twrkm35z75m/freertos_examples/freertos_hello/example_board_readme.md)
+
+
+## Project Overview
+
+| main.c, app.h
+
+|   |___ board.c, board.h
+
+|   |___ clock_config.c, clock_config.h
+
+|   |___ hardware_init.c, mcux_config.h
+
+|   |___ pin_mux.c, pin_mux.h
+
+|   |___ FreeRTOSConfig_Gen.h
+
+|   |___ mainTasks.c, mainTasks.h
+
+|   |   |___ statemachine_AB.c, statemachine_AB.h
+
+|   |	|___ uart_driver.c, uart_driver.c, 
+
+|   |   |___ fsmUART.c, fsmUART.h
+
+
+- **uart_driver**: implements a UART interruption service via IRQ_Handler. decoupling the hardware related code like baud rate config, Tx/Rx enabling, registers, flags, 
+
+- **fsmUART.h**: define la estructura de una máquina de estados a partir de un template: STATES, EVENTS, HANDLERS, FSM Structure{1xState, 1xEvent, 1xHandler(function pointer)}.
+
+- **fsmUart.h**: implementation of each Handler, and definition of the state machine fsmDEFINITION (array of fsm tructures).
+
+- **mainTasks.c**: mainTasks implements the code of the Testing Functions (TF) and the Active Objects (AO).  Testing Functions are based on the SDK examples and basically included for testing and debugging purposes in compliance with the freeRTOS task/scheduler context. Active Objects implements a Finite State Machine (FSM) template into an active object template implementation. This AO template implementation is based on a RTOS task formed by two coupled superloops: one for initialize the FSM and one for waiting and handling the arrival of an event through a RTOS queue mechanism.
+
+
+### Priorities
+
+- **Interrupts**:
+- **vTasks**:

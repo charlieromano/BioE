@@ -24,13 +24,14 @@
 #include "statemachine_Valve.h"
 
 extern TimerHandle_t timerHandle_AB;
-extern TimerHandle_t fsmUART_timerHandle;
+extern TimerHandle_t timerHandle_fsmUART;
 extern QueueHandle_t queueHandle_AB;
-extern QueueHandle_t fsmUART_queueHandle;
+extern QueueHandle_t queueHandle_fsmUART;
 extern TaskHandle_t xTaskStateMachineHandler_UART;
 extern TaskHandle_t xTaskStateMachineHandler_fsmUART;
 
 void timerCallbackAB(TimerHandle_t xTimerHandle);
+void timerCallback_fsmUART(TimerHandle_t xTimerHandle);
 void vTaskAB(void *xTimerHandle);
 void vTaskUART(void *xTimerHandle);
 void vTaskValve(void *pvParameters);

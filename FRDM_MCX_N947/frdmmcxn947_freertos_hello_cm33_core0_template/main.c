@@ -60,6 +60,13 @@ int main(void)
       return 1;
    }
     */
+   /* Create FSM queue */
+   queueHandle_fsmUART = xQueueCreate(QUEUE_MAX_LENGTH, sizeof(eSystemEvent_fsmUART));
+    if (queueHandle_fsmUART == NULL){
+        perror("Error creating FSM queue");
+        while(1);
+    }
+
    vTaskCreate_UART();
    vTaskStartScheduler();
    while (1);

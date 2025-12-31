@@ -1,29 +1,36 @@
+// mainTasks.c
 #include "mainTasks.h"
 #include "uart_driver.h"
 #include "fsmUART.h"
 
 TimerHandle_t timerHandle_AB;
+TimerHandle_t timerHandle_fsmUART;
 QueueHandle_t queueHandle_AB;
-QueueHandle_t fsmUART_queueHandle = NULL;
+QueueHandle_t queueHandle_fsmUART = NULL;
 TaskHandle_t xTaskStateMachineHandler_UART = NULL;
 TaskHandle_t xTaskStateMachineHandler_fsmUART = NULL;
 
 
 void vTaskCreate_UART(void)
 {
+    //Create UART Task and related resources (queue, timer)
     PRINTF("createTaskUART().\r\n");
-    /* Initialize UART hardware */
-    UART_DriverInit();
 
-    /* Create FSM queue */
-    fsmUART_queueHandle = xQueueCreate(QUEUE_MAX_LENGTH, sizeof(eSystemEvent_fsmUART));
-    if (fsmUART_queueHandle == NULL){
-        perror("Error creating FSM queue");
+    // Create the timer 
+    if( (timerHandle_fsmUART = xTimerCreate( "Timer fsmUART 300", 300, true, NULL, 
+        timerCallback_fsmUART)) == NULL ) {
+            perror("Error creating timer");
+            while(1);
+    }
+
+    // Start the timer
+    if(xTimerStart(timerHandle_fsmUART, 0) != pdPASS){
+        perror("Error starting timer");
         while(1);
     }
 
     /* Create UART/fsmUART task */
-    if (xTaskCreate(vTaskUART, "UART_Task",
+    if (xTaskCreate(vTask_fsmUART, "UART_Task",
                     configMINIMAL_STACK_SIZE + 100,
                     NULL, tskIDLE_PRIORITY + 3,
                     &xTaskStateMachineHandler_UART) != pdPASS){
@@ -46,8 +53,8 @@ void vTaskUART(void *pvParameters)
             tmptxIndex = txIndex;
             
             if (tmprxIndex != tmptxIndex)
+            // buffer is not empty, there is data to send.
             {
-                //PRINTF("vTaskUART(within).\r\n");
                 LPUART_WriteByte(LPUART4, demoRingBuffer[txIndex]);
                 txIndex++;
                 txIndex %= LPUART_RING_BUFFER_SIZE;
@@ -64,7 +71,10 @@ void vTask_fsmUART(void *xTimerHandle)
     (void)xTimerHandle;
     PRINTF("vTask_fsmUART!\r\n");
 
-    while(true){
+    while(1){
+        
+        UART_DriverInit();
+
         // fsmUART init
         eSystemEvent_fsmUART newEvent = evUART_Init;
         eSystemState_fsmUART nextState = STATE_UART_INIT;
@@ -72,8 +82,8 @@ void vTask_fsmUART(void *xTimerHandle)
         nextState = (*fsmUART[nextState].fsmHandler)();
         
         // Active object
-        while(true){
-            if( pdPASS == xQueueReceive(fsmUART_queueHandle, &newEvent, portMAX_DELAY)){
+        while(1){
+            if( pdPASS == xQueueReceive(queueHandle_fsmUART, &newEvent, portMAX_DELAY)){
                 fsmUART[nextState].fsmEvent = newEvent;
                 nextState = (*fsmUART[nextState].fsmHandler)();
             }
@@ -83,43 +93,21 @@ void vTask_fsmUART(void *xTimerHandle)
     }
 }
 
-void UART_init_with_IRQ(LPUART_Type *base)
+
+
+void timerCallback_fsmUART(TimerHandle_t xTimerHandle)
 {
-/*
-    lpuart_config_t config;
-    LPUART_GetDefaultConfig(&config);
-    config.baudRate_Bps = 115200U;
-    config.enableTx = true;
-    config.enableRx = true;
-    LPUART_Init(base, &config, CLOCK_GetFreq(kCLOCK_CoreSysClk));
+    (void)xTimerHandle;
+    PRINTF("fsmUART: Timer!\r\n");
 
-    // Enable RX interrupt
-    LPUART_EnableInterrupts(base, kLPUART_RxDataRegFullInterruptEnable);
-    // Enable NVIC interrupt for LPUART1
-    NVIC_SetPriority(LPUART_IRQn, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY);
-    NVIC_EnableIRQ(LPUART_IRQn);
-*/
-}
+    //if(fsmUART_timerFlag){
 
-void LPUART1_IRQHandler(void)
-{
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    uint8_t ch;
+        eSystemEvent_fsmUART fsmUART_evemt = evUART_Timeout;
 
-    // Check if RX data is available
-    if (LPUART_GetStatusFlags(LPUART1) & kLPUART_RxDataRegFullFlag)
-    {
-        ch = LPUART_ReadByte(LPUART1);
-
-        // Send event or data to a queue
-        xQueueSendFromISR(fsmUART_queueHandle, &ch, &xHigherPriorityTaskWoken);
-
-        // Optionally, echo back
-        LPUART_WriteByte(LPUART1, ch);
-    }
-
-    // Clear interrupt flag if needed (usually handled by reading the byte)
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        if(xQueueSend(queueHandle_fsmUART, &fsmUART_evemt, 0U)!=pdPASS){
+            perror("Error sending data to the queueHandle_AB from timer\r\n");
+        }
+    //}
 }
 
 
@@ -159,24 +147,6 @@ void vTaskAB(void *xTimerHandle)
     }
 }
 
-
-/*
-void vTaskUART(void *xTimerHandle)
-{
-    uint8_t ch;
-    UART_init_with_IRQ(LPUART1);
-
-    while (true)
-    {
-        // Wait for data from ISR
-        if (xQueueReceive(fsmUART_queueHandle, &ch, portMAX_DELAY) == pdPASS)
-        {
-            PRINTF("UART Rx from ISR: %c\r\n", ch);
-            // You can process or echo here if not done in ISR
-        }
-    }
-}
-*/
 
 
 #define VALVE_GPIO_PORT     GPIO1 // For P1_12, it's GPIO1
