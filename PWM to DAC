@@ -1,0 +1,53 @@
+PWM to DAC
+2nd order filter
+
+V_PWM = 5V
+R1 = R2 = 1.8K
+C1 = C2 = 22nF
+f = 50 kHz
+
+Duty[%]	Vo[V] 	V_ripple[V]	Vo_p1[V] 	Vo_p1_ripple[V]
+0.01 	(54.9-55)1e-3	105e-6 	(53.8-55)1e-3 	1.25e-3
+0.20	1.09-1.10 	1.65e-3	1.04-1.15 	105e-3
+0.40 	2.19-2.20	2.45e-3	2.12-2.27 	148e-3
+0.50 	2.75-2.747	2.5e-3	2.82-2.67	150e-3
+0.60 	3.19-3.20 	2.28e-3	3.12-3.26 	139e-3
+0.80 	4.09-4.10 	1.47e-3	4.05-4.14 	90.8e-3
+0.99 	4.99-4.99 	17.6e-6 4.99-4.99 	1.13e-3 	
+
+
+Duty[%]	Vo[V] 	V_ripple[V]	Ripple[%]
+0.01	0.05495	1.05E-04	0.19
+0.2	1.095	1.65E-03	0.15
+0.4	2.195	2.45E-03	0.11
+0.5	2.7485	2.50E-03	0.09
+0.6	3.195	2.28E-03	0.07
+0.8	4.095	1.47E-03	0.04
+0.99	4.99	1.76E-05	0.00
+
+
+void PWM3_Initialize(void)
+{
+PWM3CON = 0x80; // POL active_hi; EN enabled
+PWM3DCH = 0x27; // DC = 50%
+PWM3DCL = 0xC0;
+}
+
+void PWM3_LoadDutyValue(uint16_t dutyValue)
+{
+PWM3DCH = (dutyValue & 0x03FC)>>2; // 8 MSBs of PWM duty cycle
+PWM3DCL = (dutyValue & 0x0003)<<6; // 2 LSBs of PWM duty cycle
+}
+
+void TMR2_Initialize(void)
+{
+T2CLKCON = 0x01; // T2CS FOSC/4
+T2HLT = 0x00;
+T2RST = 0x00;
+T2PR = 0x4F; // Rollover every 10 us
+T2TMR = 0x00;
+PIR4bits.TMR2IF = 0; // Clear IF flag
+T2CON = 0x80; // CKPS 1:1; OUTPS 1:1; ON on
+}
+
+
