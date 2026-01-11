@@ -12,8 +12,6 @@
 #define hello_task_PRIORITY (configMAX_PRIORITIES - 1)
 static void hello_task(void *pvParameters);
 TaskHandle_t helloTaskHandle = NULL;
-TaskHandle_t xTaskStateMachineHandler_AB = NULL;
-
 
 int main(void)
 {
@@ -27,46 +25,7 @@ int main(void)
         while (1);
     }
 
-   //***************************************************************************// 
-   // State Machine AB tasks 
-   //***************************************************************************
-    /*
-   // Create the timer 
-   if( (timerHandle_AB = xTimerCreate( "TimerAB", 1000, true, NULL, 
-      timerCallbackAB)) == NULL ) {
-         perror("Error creating timer");
-         return 1;
-   }
-
-   // Start the timer
-   if(xTimerStart(timerHandle_AB, 0) != pdPASS){
-      perror("Error starting timer");
-      return 1;
-      }
-
-   // Create the queue
-   queueHandle_AB = xQueueCreate(QUEUE_MAX_LENGTH, sizeof(eSystemEvent_AB));
-   if (queueHandle_AB == NULL){
-      perror("Error creating queue");
-      return 1;
-   }
-
-   // Create the task 
-   if( xTaskCreate( vTaskAB, "State Machine using active object", 
-      configMINIMAL_STACK_SIZE + 100, NULL, tskIDLE_PRIORITY+2, 
-      &xTaskStateMachineHandler_AB) 
-      == pdFAIL ) {
-      perror("Error creating task");
-      return 1;
-   }
-    */
-   /* Create FSM queue */
-   queueHandle_fsmUART = xQueueCreate(QUEUE_MAX_LENGTH, sizeof(eSystemEvent_fsmUART));
-    if (queueHandle_fsmUART == NULL){
-        perror("Error creating FSM queue");
-        while(1);
-    }
-
+   //vTaskCreate_AB(); 
    vTaskCreate_UART();
    vTaskStartScheduler();
    while (1);

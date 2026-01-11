@@ -9,12 +9,18 @@ QueueHandle_t queueHandle_AB;
 QueueHandle_t queueHandle_fsmUART = NULL;
 TaskHandle_t xTaskStateMachineHandler_UART = NULL;
 TaskHandle_t xTaskStateMachineHandler_fsmUART = NULL;
-
+TaskHandle_t xTaskStateMachineHandler_AB = NULL;
 
 void vTaskCreate_UART(void)
 {
     //Create UART Task and related resources (queue, timer)
     PRINTF("createTaskUART().\r\n");
+
+    queueHandle_fsmUART = xQueueCreate(QUEUE_MAX_LENGTH, sizeof(eSystemEvent_fsmUART));
+    if (queueHandle_fsmUART == NULL){
+        perror("Error creating FSM queue");
+        while(1);
+    }
 
     // Create the timer 
     if( (timerHandle_fsmUART = xTimerCreate( "Timer fsmUART 300", 300, true, NULL, 
@@ -93,8 +99,6 @@ void vTask_fsmUART(void *xTimerHandle)
     }
 }
 
-
-
 void timerCallback_fsmUART(TimerHandle_t xTimerHandle)
 {
     (void)xTimerHandle;
@@ -110,22 +114,44 @@ void timerCallback_fsmUART(TimerHandle_t xTimerHandle)
     //}
 }
 
-
-void timerCallbackAB(TimerHandle_t xTimerHandle)
+void vTaskCreate_AB(void)
 {
-    PRINTF("Timer!\r\n");
-    static uint8_t cnt = 0;
-    cnt++;
-    eSystemEvent_AB data_AB = cnt%2;
-    if(xQueueSend(queueHandle_AB, &data_AB, 0U)!=pdPASS){
-          perror("Error sending data to the queueHandle_AB from timer\r\n");
+    //Create AB Task and related resources (queue, timer)
+    PRINTF("createTaskAB().\r\n");
+
+    queueHandle_AB = xQueueCreate(QUEUE_MAX_LENGTH, sizeof(eSystemEvent_AB));
+    if (queueHandle_AB == NULL){
+        perror("Error creating AB queue");
+        while(1);
+    }
+
+    // Create the timer 
+    if( (timerHandle_AB = xTimerCreate( "Timer AB 1000", 1000, true, NULL, 
+        timerCallbackAB)) == NULL ) {
+            perror("Error creating timer");
+            while(1);
+    }
+
+    // Start the timer
+    if(xTimerStart(timerHandle_AB, 0) != pdPASS){
+        perror("Error starting timer");
+        while(1);
+    }
+
+    /* Create AB task */
+    if (xTaskCreate(vTask_fsmAB, "fsmAB_Task",
+                    configMINIMAL_STACK_SIZE + 100,
+                    NULL, tskIDLE_PRIORITY + 3,
+                    &xTaskStateMachineHandler_AB) != pdPASS){
+        perror("Error creating AB task");
+        while(1);
     }
 }
-   
-void vTaskAB(void *xTimerHandle)
+
+void vTask_fsmAB(void *xTimerHandle)
 {
     (void)xTimerHandle;
-    PRINTF("vTaskAB!\r\n");
+    PRINTF("vTask fsmAB!\r\n");
   
     while(true){
 
@@ -147,7 +173,17 @@ void vTaskAB(void *xTimerHandle)
     }
 }
 
-
+void timerCallbackAB(TimerHandle_t xTimerHandle)
+{
+    PRINTF("Timer!\r\n");
+    static uint8_t cnt = 0;
+    cnt++;
+    eSystemEvent_AB data_AB = cnt%2;
+    if(xQueueSend(queueHandle_AB, &data_AB, 0U)!=pdPASS){
+          perror("Error sending data to the queueHandle_AB from timer\r\n");
+    }
+}
+   
 
 #define VALVE_GPIO_PORT     GPIO1 // For P1_12, it's GPIO1
 #define VALVE_GPIO_PIN      12U   // Pin 12

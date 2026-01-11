@@ -29,11 +29,12 @@ extern QueueHandle_t queueHandle_AB;
 extern QueueHandle_t queueHandle_fsmUART;
 extern TaskHandle_t xTaskStateMachineHandler_UART;
 extern TaskHandle_t xTaskStateMachineHandler_fsmUART;
+extern TaskHandle_t xTaskStateMachineHandler_AB;
 
 void timerCallbackAB(TimerHandle_t xTimerHandle);
 void timerCallback_fsmUART(TimerHandle_t xTimerHandle);
-void vTaskAB(void *xTimerHandle);
-void vTaskUART(void *xTimerHandle);
+void vTask_fsmAB(void *xTimerHandle);
+void vTask_fsmUART(void *xTimerHandle);
 void vTaskValve(void *pvParameters);
 void vTaskPump(void *pvParameters);
 void vTask_fsmUART(void *xTimerHandle);
