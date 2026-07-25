@@ -51,6 +51,10 @@
 #define BOARD_BT_UART_CLK_FREQ   12000000U
 #define BOARD_BT_UART_CLK_ATTACH kFRO12M_to_FLEXCOMM2
 
+#define SECOND_LPUART        LPUART2
+#define SECOND_LPUART_CLK    CLOCK_GetLPFlexCommClkFreq(2u)
+
+
 /*! @brief The ENET PHY address. */
 #define BOARD_ENET0_PHY_ADDRESS (0x00U) /* Phy address of enet port 0. */
 

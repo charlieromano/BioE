@@ -19,14 +19,14 @@ int main(void)
 
     if (xTaskCreate(hello_task, "Hello_task", 
       configMINIMAL_STACK_SIZE + 100,
-      NULL, tskIDLE_PRIORITY + 3,
-      &xTaskStateMachineHandler_UART) != pdPASS){
-        perror("Error creating UART task");
+      NULL, tskIDLE_PRIORITY + 3, NULL) != pdPASS){
+        perror("Error creating hello task");
         while (1);
     }
 
-   //vTaskCreate_AB(); 
-   vTaskCreate_UART();
+   vTaskCreate_AB(); 
+   //vTaskCreate_UART();
+
    vTaskStartScheduler();
    while (1);
 }
@@ -38,7 +38,7 @@ static void hello_task(void *pvParameters)
 {
     while (1)
     {
-        PRINTF("Hello world 47.\r\n");
+        PRINTF("Hello world 2026-07-25.\r\n");
         vTaskSuspend(NULL);
     }
 }

@@ -12,9 +12,7 @@
 #define LPUART_IRQHandler LP_FLEXCOMM4_IRQHandler
 #define LPUART_BAUDRATE     115200U //BOARD_DEBUG_UART_BAUDRATE
 
-BaseType_t UART_ReadByteFromISR(uint8_t *data);
 extern QueueHandle_t fsmUART_queueHandle;
-
 extern uint8_t g_tipString[];
 extern uint8_t demoRingBuffer[LPUART_RING_BUFFER_SIZE];
 extern volatile uint16_t txIndex;
@@ -23,6 +21,7 @@ extern QueueHandle_t queueHandle_fsmUART;
 extern bool fsmUART_timerFlag;
 
 void UART_DriverInit(void);
-void UART_WriteByteFromISR(uint8_t data);
+BaseType_t UART_ReadByteFromISR(uint8_t *data, uint16_t rxIndex);
+void UART_WriteByteFromISR(uint8_t data, uint16_t txIndex);
 
 #endif /* UART_DRIVER_H_ */

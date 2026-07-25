@@ -36,7 +36,7 @@ void vTaskCreate_UART(void)
     }
 
     /* Create UART/fsmUART task */
-    if (xTaskCreate(vTask_fsmUART, "UART_Task",
+    if (xTaskCreate(vTaskUART, "UART_Task",
                     configMINIMAL_STACK_SIZE + 100,
                     NULL, tskIDLE_PRIORITY + 3,
                     &xTaskStateMachineHandler_UART) != pdPASS){
@@ -47,11 +47,25 @@ void vTaskCreate_UART(void)
 
 void vTaskUART(void *pvParameters)
 {
-    uint16_t tmprxIndex;
-    uint16_t tmptxIndex;
-    PRINTF("vTaskUART().\r\n");
+    //uint16_t tmprxIndex;
+    //uint16_t tmptxIndex;
+    PRINTF("vTaskUART(lpuart2 115200).\r\n");
 
-    while(1)
+    lpuart_config_t config2;
+    LPUART_GetDefaultConfig(&config2);
+    config2.baudRate_Bps = 115200U;          // or BOARD_BT_UART_BAUDRATE if you want 3M
+    config2.enableTx     = true;
+    config2.enableRx     = true;
+
+    LPUART_Init(SECOND_LPUART, &config2, SECOND_LPUART_CLK);
+    LPUART_WriteBlocking(SECOND_LPUART, (uint8_t *)"Hello from LPUART2\r\n", 21);
+    //uint8_t ch2;
+while (1) {
+    LPUART_WriteBlocking(SECOND_LPUART, (uint8_t *)"LPUART2 OK\r\n", 12);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+}
+
+ /* while(1)
     {
         if (kLPUART_TxDataRegEmptyFlag & LPUART_GetStatusFlags(LPUART4))
         {
@@ -62,6 +76,7 @@ void vTaskUART(void *pvParameters)
             // buffer is not empty, there is data to send.
             {
                 LPUART_WriteByte(LPUART4, demoRingBuffer[txIndex]);
+                
                 txIndex++;
                 txIndex %= LPUART_RING_BUFFER_SIZE;
             }
@@ -69,6 +84,7 @@ void vTaskUART(void *pvParameters)
 
         //vTaskDelay(pdMS_TO_TICKS(1));
     }
+*/
 }
 
 void vTask_fsmUART(void *xTimerHandle)
@@ -127,7 +143,7 @@ void vTaskCreate_AB(void)
 
     // Create the timer 
     if( (timerHandle_AB = xTimerCreate( "Timer AB 1000", 1000, true, NULL, 
-        timerCallbackAB)) == NULL ) {
+        timerCallback_AB)) == NULL ) {
             perror("Error creating timer");
             while(1);
     }
@@ -173,7 +189,7 @@ void vTask_fsmAB(void *xTimerHandle)
     }
 }
 
-void timerCallbackAB(TimerHandle_t xTimerHandle)
+void timerCallback_AB(TimerHandle_t xTimerHandle)
 {
     PRINTF("Timer!\r\n");
     static uint8_t cnt = 0;

@@ -6,7 +6,7 @@
   "multicoreType": "none",
   "projectType": "sdk-freestanding",
   "sdk": {
-    "path": "c:\\Users\\CARLOS\\Documents\\NXP\\NXP\\FRDM_MCX_N947",
+    "path": "c:\\Users\\CARLOS\\Documents\\Personal\\Proyectos\\BioE\\FRDM_MCX_N947",
     "version": "25.03.00",
     "boardId": "frdmmcxn947",
     "deviceId": "MCXN947",

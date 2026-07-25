@@ -63,6 +63,7 @@ BOARD_InitPins:
 void BOARD_InitPins(void)
 {
   CLOCK_EnableClock(kCLOCK_Port1);
+  CLOCK_EnableClock(kCLOCK_Port4);
 
   /* PORT1_8 (pin A1) is configured as FC4_P0 */
   const port_pin_config_t port1_8_pinA1_config = {
@@ -91,7 +92,7 @@ void BOARD_InitPins(void)
     kPORT_UnlockRegister};
     PORT_SetPinConfig(PORT1, 9U, &port1_9_pinB1_config);
 
-  const port_pin_config_t port1_0_config = {
+    const port_pin_config_t port1_0_config = {
     kPORT_PullDisable,
     kPORT_LowPullResistor,
     kPORT_FastSlewRate,
@@ -117,8 +118,8 @@ void BOARD_InitPins(void)
     kPORT_InputNormal,
     kPORT_UnlockRegister};
     PORT_SetPinConfig(PORT1, 1U, &port1_1_config);
-/*
-  // Define your configuration (adjust the naming as you prefer)
+
+  
   const port_pin_config_t port4_2_config = {
     kPORT_PullDisable,
     kPORT_LowPullResistor,
@@ -135,7 +136,7 @@ void BOARD_InitPins(void)
   PORT_SetPinConfig(PORT4, 2U, &port4_2_config);
 
   const port_pin_config_t port4_3_config = {
-    kPORT_PullDisable,
+    kPORT_PullUp,
     kPORT_LowPullResistor,
     kPORT_FastSlewRate,
     kPORT_PassiveFilterDisable,
@@ -148,7 +149,7 @@ void BOARD_InitPins(void)
   };
   // Configure PORT4_3 (pin ...) as LPUART1_RX
   PORT_SetPinConfig(PORT4, 3U, &port4_3_config);
-*/  
+/**/  
 }
 /***********************************************************************************************************************
  * EOF

@@ -2,8 +2,6 @@
 #include "fsmUART.h"
 #include "uart_driver.h"
 
-LPUART_Type *base = LPUART4;
-uint8_t ch;
 
 bool fsmUART_timerFlag = false;
 

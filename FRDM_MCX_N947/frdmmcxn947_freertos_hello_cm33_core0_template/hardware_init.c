@@ -22,6 +22,10 @@ void BOARD_InitHardware(void)
     CLOCK_SetClkDiv(kCLOCK_DivFlexcom4Clk, 1u);
     CLOCK_AttachClk(BOARD_DEBUG_UART_CLK_ATTACH);
 
+    /* attach FRO 12M to FLEXCOMM2 (second UART) */
+    CLOCK_SetClkDiv(kCLOCK_DivFlexcom2Clk, 1u);
+    CLOCK_AttachClk(BOARD_BT_UART_CLK_ATTACH);   
+
     BOARD_InitPins();
     BOARD_InitBootClocks();
     BOARD_InitDebugConsole();

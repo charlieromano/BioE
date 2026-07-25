@@ -21,7 +21,9 @@
       ],
     
       "gdbServerConfigs": {
-        "linkserver": {},
+        "linkserver": {
+          "device": "MCXN947:FRDM-MCXN947"
+        },
     		"segger": {},
     		"pemicro": {}
       },

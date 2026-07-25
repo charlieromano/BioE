@@ -15,6 +15,7 @@
 #include "pin_mux.h"
 
 #define QUEUE_MAX_LENGTH 10
+#define UART_MAX_COMMAND_LENGTH 64
 
 extern SemaphoreHandle_t xMutexUART;
 
@@ -65,7 +66,7 @@ typedef enum{
 
 typedef struct {
     eUART_ErrorCode code;
-    char message[64];
+    char message[UART_MAX_COMMAND_LENGTH];
 } sUART_Error;
 
 #endif /* STATEMACHINE_UART_H_ */
